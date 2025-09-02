@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #587db6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .quiz-container {
+      width: 500px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 36px;
+      margin-bottom: 350px;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    .options {
+      margin: 10px 0;
+    }
+    .options label {
+      display: block;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .btn {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #45a049;
+    }
+    .result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+    <h1>Quiz Game -> </h1>
+    
+  <div class="quiz-container">
+    <h2 id="question">Question text</h2>
+    <div id="options" class="options"></div>
+    <button class="btn" onclick="nextQuestion()">Next</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const questions = [
+      { 
+        type: "single",
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Venus"],
+        answer: "Mars"
+      },
+      { 
+        type: "multi",
+        question: "Which of the following are programming languages?",
+        options: ["Python", "Snake", "JavaScript", "Elephant"],
+        answer: ["Python", "JavaScript"]
+      },
+      { 
+        type: "fill",
+        question: "Fill in the blank: The capital of France is _____.",
+        answer: "Paris"
+      },
+      { 
+        type: "boolean",
+        question: "The Sun is a star. True or False?",
+        options: ["True", "False"],
+        answer: "True"
+      },
+      { 
+        type: "dropdown",
+        question: "Which is the largest ocean on Earth?",
+        options: ["Atlantic Ocean", "Indian Ocean", "Pacific Ocean", "Arctic Ocean"],
+        answer: "Pacific Ocean"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    function loadQuestion() {
+      const q = questions[current];
+      document.getElementById("question").innerText = q.question;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      if (q.type === "single" || q.type === "boolean") {
+        q.options.forEach(opt => {
+          optionsDiv.innerHTML += `
+            <label><input type="radio" name="answer" value="${opt}"> ${opt}</label>
+          `;
+        });
+      } 
+      else if (q.type === "multi") {
+        q.options.forEach(opt => {
+          optionsDiv.innerHTML += `
+            <label><input type="checkbox" name="answer" value="${opt}"> ${opt}</label>
+          `;
+        });
+      } 
+      else if (q.type === "fill") {
+        optionsDiv.innerHTML = `<input type="text" id="fillAnswer" placeholder="Type your answer...">`;
+      } 
+      else if (q.type === "dropdown") {
+        let selectHTML = `<select id="dropdown">`;
+        q.options.forEach(opt => {
+          selectHTML += `<option value="${opt}">${opt}</option>`;
+        });
+        selectHTML += `</select>`;
+        optionsDiv.innerHTML = selectHTML;
+      }
+    }
+
+    function nextQuestion() {
+      const q = questions[current];
+      let userAnswer;
+
+      if (q.type === "single" || q.type === "boolean") {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        if (selected) userAnswer = selected.value;
+      } 
+      else if (q.type === "multi") {
+        userAnswer = Array.from(document.querySelectorAll('input[name="answer"]:checked')).map(cb => cb.value);
+      } 
+      else if (q.type === "fill") {
+        userAnswer = document.getElementById("fillAnswer").value.trim();
+      } 
+      else if (q.type === "dropdown") {
+        userAnswer = document.getElementById("dropdown").value;
+      }
+
+      if (userAnswer !== undefined) {
+        if (q.type === "multi") {
+          if (JSON.stringify(userAnswer.sort()) === JSON.stringify(q.answer.sort())) {
+            score++;
+          }
+        } else {
+          if (userAnswer.toString().toLowerCase() === q.answer.toString().toLowerCase()) {
+            score++;
+          }
+        }
+      }
+
+      current++;
+      if (current < questions.length) {
+        loadQuestion();
+      } else {
+        document.getElementById("question").style.display = "none";
+        document.getElementById("options").style.display = "none";
+        document.querySelector(".btn").style.display = "none";
+        document.getElementById("result").innerText = `🎉 You scored ${score} out of ${questions.length}`;
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
